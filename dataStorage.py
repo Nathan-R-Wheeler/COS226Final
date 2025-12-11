@@ -27,6 +27,8 @@ class DataItem:
         self.quote = quote
 
 def main():
+    #I import the database here because when I placed it at the top with the imports,
+    #  it created an import loop and crashed.
     import Database
     #first load the data
     file = "MOCK_DATA.csv"
