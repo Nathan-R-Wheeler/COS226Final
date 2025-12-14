@@ -108,30 +108,6 @@ class HashTables():
         for index, dataItems in enumerate(dataItems):
             self.linearInsert(dataItems, index)
 
-    # def quadraticInsert(self, key, value):
-    #     hash = self.doubleHash(key)
-    #     hashedValue = hash % self.size
-    #     collisions = 0 
-
-        
-    #     for i in range(self.size):
-    #         index = (hashedValue + (i * i)) % self.size
-    #         insertionSlot = self.quadraticTable[index]
-
-
-    #         #if there is an empty slot
-    #         if insertionSlot == None:
-    #             self.quadraticTable[index] = (key, value)
-    #             self.collisions += collisions
-    #             return
-    #         #if the key already exists, we update it
-    #         if insertionSlot[0] == key:
-    #             self.quadraticTable[index] = (key, value)
-    #             return
-    #         collisions += 1
-
-    #     print("The table filled up!")
-
     def searhByKey(self, key):
         hashed = self.doubleHash(key)
         index = hashed % self.size
@@ -143,6 +119,24 @@ class HashTables():
             #check if empty
             if insertionSlot is not None and insertionSlot[0] == key:
                 return insertionSlot[1]
+            
+            count += 1
+            index = (index + 1) % self.size
+        
+        return -1
+
+    def deleteByKey(self, key):
+        hashed = self.doubleHash(key)
+        index = hashed % self.size
+        count = 0
+        
+        while count < self.size:
+            insertionSlot = self.linearTable[index]
+
+            #check if empty
+            if insertionSlot is not None and insertionSlot[0] == key:
+                self.linearTable[index] = None
+                return
             
             count += 1
             index = (index + 1) % self.size
