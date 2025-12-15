@@ -17,7 +17,7 @@ def mergeSORT(x, key = None):
     mergeSPLIT(x, 0, len(x)-1, key )
 
 def indexKey(pair):
-    return str(pair[0])
+    return pair[0]
 
 def mergeSPLIT(x,leftBound, rightBound, key):
     if (rightBound - leftBound)== 0: #array is size 1

@@ -2,55 +2,68 @@
 #Professor Schotter
 #COS-226
 #12/4/25
+
+#This file takes my old B+ tree, now made to store objects for Database
 #DataItem for B+ tree includes self, key, value
 
 #make the max degree that works with my tree
 from sympy import Tuple
 from dataStorage import DataItem
 
+#makes the tree
 class Tree:
+    #keeps track of root and maxdegree
     def __init__(self, maxdegree):
         self.root = None # reference to the root node
         self.maxdegree = maxdegree # the number of keys that will cause a split
+
+#THIS, is a bucket;
+#there's more,
+#inside of the B+ tree they are the nodes!
 class Bucket:
 
     def __init__(self, maxdegree):
-        self.keys = [] # A list of Keys that are used to organize the data
-        self.links = [] # A list of links potential child nodes
-        self.parent = None # A link to the parent node
-        self.is_leaf = True # A boolean indicating if the node is a leaf node (and thus holds the data in the keys)
-        self.next = None # A link to the next leaf node in the chain
+        self.keys = [] #A list of Keys that are used to organize the data
+        self.links = [] #A list of links potential child nodes
+        self.parent = None #A link to the parent node
+        self.is_leaf = True #A boolean indicating if the node is a leaf node 
+        self.next = None #A link to the next leaf node in the chain
         self.prev = None
         self.maxdegree = maxdegree
 
+#bBucket extends bucket
 class bBucket(Bucket):
     
+    #key key value at index
     def getKeyAtIndex(self, index):
         if self.is_leaf:
             return self.keys[index].key
         else:
             return self.keys[index]
-
+    #returns number of keys in the bucket
     def getSize(self):
         return len(self.keys)
 
-    def bucketRemove(self, key):
+    #removes the keys from the buckets
+    def bucketRemove(self, keyToDelete):
         #bucket remove
         #use the target loop again
         target = 0
         while target < len(self.keys):
-            dataItem = self.keys[target]
+            key = self.keys[target]
            
-            if (dataItem.key == key):
-                removedItem = self.keys.pop(target)
+            if (key == keyToDelete):
+                self.keys.pop(target)
+                removedItem = self.links.pop(target)
                 return removedItem
             
-            elif dataItem.key > key:
+            elif keyToDelete > key:
                 break
                 
             target += 1
         return -1
-
+    
+    #adds a key and child to an internal bucket
     def addNodeToInternalBucket(self, key, node):
         targetIndex = len(self.keys)
         #look through the bucket
@@ -72,6 +85,7 @@ class bBucket(Bucket):
         self.links.insert(nodeKeyToInsert, node)
         return
 
+    #add the valuepair to the leafBuket
     def addValueToLeafBucket(self, key, data):
         targetIndex = len(self.keys)
         #look through the bucket
@@ -85,21 +99,25 @@ class bBucket(Bucket):
     #now that we can add buckets, it is time to find the leaf to add them to
     #whenever adding, we are always adding to a leaf
     
+    #implements all the B tree stuff
 class bTree(Tree):
 
+
+    #tells the fewest keys to the bucket
     def getMinimumAmountOfKeys(self):
         minimumKey = (self.maxdegree - 1) // 2
         return minimumKey
-
+    #take the keys out
     def remove(self, key): #keep an eye on the parents
 
         curBucket = self.root
         memory = None #bucket where we find the key early
         memoryIndex = 0 #Which index is in the memory bucket
 
+        #if the tree is empty, dont remove
         if curBucket == None:
             return -1
-
+        #if the root is leaf, take it out
         if curBucket.is_leaf:
             curBucket.bucketRemove(key)
             return
@@ -152,7 +170,7 @@ class bTree(Tree):
                 #too small, need to fix
                 self.fixLeafBucket(curBucket) #fix the leaf bucket
                 
-            return f"Found {key} and removed {remove.value}"
+            return f"Found {key} and removed {remove}"
 
         else:
             #didn't find it, let the children know we have no food
@@ -218,9 +236,9 @@ class bTree(Tree):
 
 
         if bbucket.getSize() > 1: #bucket is large enough, the next key is here
-            return bbucket.keys[1].key
+            return bbucket.keys[1]
         elif bbucket.next != None: #check if there is  bucket to the right
-            return bbucket.next.keys[0].key
+            return bbucket.next.keys[0]
         else: 
             return None
         
@@ -361,19 +379,23 @@ class bTree(Tree):
         return bbucket.getSize() > self.getMinimumAmountOfKeys()
 
     #this makes the tree
+    #adds the key value pair to the tree
     def add(self, key, value):
         #is the tree empty?
         if self.root == None:
+            #always puts it in a lraf
             self.root = bBucket(self.maxdegree)
             self.root.addValueToLeafBucket(key, value)
             return
         else:
+            #find the right leaf
             bucket = self.addRecursive(self.root, value, key)
-
+          
+            #check to see if the bucket is too big
             if (len(bucket.keys) >= bucket.maxdegree):
                 self.splitLeaf(bucket)
             #CHECK FOR LEAF OR INTERNAL
-
+    #go through the tree until it hits a leaf
     def addRecursive(self, bbucket: bBucket, value, key):
         if(bbucket.is_leaf):
             #by now we are a leaf bucket
@@ -391,6 +413,7 @@ class bTree(Tree):
             bbucket = bbucket.links[target]
             return self.addRecursive(bbucket, value, key)
 
+    #IF IT OVERFLOWS, split pea soup(bucket)
     def splitLeaf(self, bbucket: bBucket):
         newLeaf = bBucket(self.maxdegree)
         middleIndex = self.maxdegree // 2
@@ -412,7 +435,9 @@ class bTree(Tree):
             self.root.keys = [newLeaf.keys[0].key]
             self.root.links = [bbucket, newLeaf]
             return
+        
         else:
+        #add new leaf to the parent
             newLeaf.parent = bbucket.parent
         bbucket.parent.addNodeToInternalBucket(newLeaf.keys[0].key, newLeaf)
         parentNewSize = len(bbucket.parent.keys)
@@ -458,48 +483,146 @@ class bTree(Tree):
         if(split >= self.maxdegree):
             self.splitInternal(bbucket.parent)
 
+
+    #takes in sorted input, fills all keys at once
     def bulkInsert(self, keysWithValues: list[any]):
+        #make the leaf bucket
         currentLeafBucket = bBucket(self.maxdegree)
+        #watch the leaf buckets
         leafBuckets = [currentLeafBucket]
 
+        #look through all the keys
         for keyWithValue in keysWithValues:
+            #if the leaf is getting more then 3/4ths full, split it
             if currentLeafBucket.getSize() >= int(self.maxdegree / 4 * 3):
                 newLeafBucket = bBucket(self.maxdegree)
                 newLeafBucket.prev = currentLeafBucket
                 currentLeafBucket.next = newLeafBucket
                 currentLeafBucket = newLeafBucket
                 leafBuckets.append(currentLeafBucket)
+                #add the keys and values
             currentLeafBucket.keys.append(keyWithValue[0])
             currentLeafBucket.links.append(keyWithValue[1])
-
+        #fix the tree
         self.BulkInsertFix(leafBuckets)
 
+    #builds the tree recursively from the bottom up
     def BulkInsertFix(self, buckets: list[bBucket]):
+        #this is best case 
         if len(buckets) == 1:
             self.root = buckets[0]
             return
 
+        #decides when to pull a key up
         shouldTakeKey = False
+        #new internal bucket
         bucketToAdd = bBucket(self.maxdegree)
         bucketToAdd.is_leaf = False
+        #watch the buckets
         internalBuckets = []
+        #go through the lower buckets
         for bucket in buckets:
+            #set parent child relations
             bucket.parent = bucketToAdd
             bucketToAdd.links.append(bucket)
 
+            #buckets hold a key to parent
             if shouldTakeKey:
                 bucketToAdd.keys.append(bucket.keys[0])
             else:
+                #first bucket is new internal
                 internalBuckets.append(bucketToAdd)
                 shouldTakeKey = True
-        
+            #if the cucket gets too big, split it
             if (len(bucketToAdd.keys) >= self.maxdegree):
                 bucketToAdd = bBucket(self.maxdegree)
                 bucketToAdd.is_leaf = False
                 shouldTakeKey = False
             
-        
+        #recursively build up
         self.BulkInsertFix(internalBuckets)
         
-
+        #finds the data between input values
+    def FindDataItemsBetweenValues(self, lowerValue, higherValue):
+        #find lower value
+        currentBucket = self.FindBucketContainingValue(lowerValue)
+        result = []
         
+        #traverse leafs
+        while (currentBucket is not None):
+
+            index = 0
+            for internalKey in currentBucket.keys:
+                #get keys in range
+                if internalKey > lowerValue:
+                    if internalKey >= higherValue:
+                        break
+                    result.append(currentBucket.links[index])
+                index += 1
+            #move to next bucket
+            currentBucket =  currentBucket.next
+        
+        return result
+    #findts the data below inputted value
+    def FindDataItemsBelowValue(self, value):
+        #start from square 1
+        currentBucket = self.FindFirstBucket()
+        result = []
+
+        #go through em all
+        while (currentBucket is not None):
+            index = 0
+            
+            #get the keys as you go, until you hit limit
+            for internalKeys in currentBucket.keys:
+                if internalKeys < value:
+                    result.append(currentBucket.links[index])
+                else:
+                    break
+                
+                index += 1
+                
+            currentBucket =  currentBucket.next
+        
+        return result
+    #finds the data above input
+    def findDataItemsAboveValue(self, value):
+        #start at value
+        currentBucket = self.FindBucketContainingValue(value)
+        result = []
+        
+        #traverse buckets
+        while (currentBucket is not None):
+            index = 0
+            for internalKeys in currentBucket.keys:
+                if internalKeys > value:
+                    result.append(currentBucket.links[index])
+                index += 1
+
+            currentBucket =  currentBucket.next
+        
+        return result
+
+    #finds the inputted value
+    #does not check if value is there
+    def FindBucketContainingValue(self, value):
+        currentBucket = self.root
+        #go until you hit the leafs
+        while (not currentBucket.is_leaf):
+            target = 0
+            for internalKey in currentBucket.keys:
+                if value < internalKey:
+                    break
+                target += 1
+            currentBucket = currentBucket.links[target]
+    
+        return currentBucket
+
+    #finds the leftmost leaf, used for all ranges and scans
+    def FindFirstBucket(self):
+        currentNode = self.root
+
+        while (not currentNode.is_leaf):
+            currentNode = currentNode.links[0]
+
+        return currentNode
