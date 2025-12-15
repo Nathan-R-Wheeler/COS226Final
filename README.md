@@ -1,59 +1,10 @@
 # COS226Final
-<h2>This is the final project for my Data structures and Algorithms class. It uses B+ trees and A hash table, as well as mergesort to store bulk items.
+<h1>This is the final project for my Data structures and Algorithms class. It uses indexes in B+ trees and A linked list hash table, as well as mergesort to store bulk items.
 
-<h2>How to Run:<br>
-The program must be run from the "dataStorage" file
+<h1>How to Run:<br>
+-The program must be run from the "dataStorage" file
 <br>
--When the program first runs, it prompts the user for what function they want the program to carry out:<br>
-<br>
-1: Create Index<br>
-2: Exact value search<br>
-3: Range Query<br>
-4: Bye<br>
-<br>
-
-<h2>If the user selects 1: Create Index:<br>
-<br>
--The program will prompt the user to select from a list of properties inside the database:
-<br>
-0: director<br>
-1: genre<br>
-2: id - Indexed<br>
-3: minDuration<br>
-4: movieName<br>
-5: productionCompany<br>
-6: quote<br>
-7: rating<br>
-8: releaseDate<br>
-<br>
-Upon selection the task will be carried out. <br>
-<br>
-Afterwards, user is returned to the properties menu.<br>
-<br>
-Upon another selection of property, the program will again 
-prompt the user for the function to carry out upon the property.<br>
-<br>
-
-
-<h2>If the user selects 2: Exact Value Search:<br>
-<br>
--The program will prompt the user with categories of searchable properties<br>
-<br>
--After selecting which category to search, the program prompts the user what to search for<br>
-<br>
--After sucessfully returning the searched item the program will prompt the user for what to do with the value.<br>
-<br>
--The user can choose to either export it to a csv, or to delete it out of the database.
-<br>
-
-<h2>If the user selects 3: Range Query:<br>
-<br>
-
-<h2>If the user selects 4: Quit:<br>
-<br>
--The program will close
-
-<br>
+-When the program first runs, it prompts the user with the main menu for what function they want the program to carry out:<br>
 <br>
 <h1>Commands and expected outputs:
 
@@ -91,6 +42,10 @@ prompt the user for the function to carry out upon the property.<br>
 -If the user choses 1, the program deletes them from the list.<br>
 -The program then returns to the main menu.<br>
 
+4. Bye:<br>
+-The user inputs 4.<br>
+-The program thanks the user and terminates<br>
+
 
 
 
@@ -98,7 +53,7 @@ prompt the user for the function to carry out upon the property.<br>
 <h1>Initialization of the database:
 <br>
 <br>
--In my database initialization, it takes around 0.92 seconds to load the 15000 dataItems, and due to the use of mergesort and bulkAdding, has around O(N Log(N)) efficiency.
+-In my database initialization, it takes around 0.92 seconds to load the 15000 dataItems, and due to the use of mergesort and bulkAdding, has around O(N log(N)) efficiency.
 
 
 
@@ -111,11 +66,13 @@ prompt the user for the function to carry out upon the property.<br>
 
 <h1>Queries:
 <br>
+-My queries are based off of exact values and indexes. My implementation of exact value uses a hash table with a double hashed linked list. at best it has an efficiency of O(n) and at worst its efficiency is O(1). The B plus tree, which has an efficiency of (O log(N)) is used for indexing.
 
 
 
 <h1>Deletions:
 <br>
+-My deletion first has to delete from all hash tables, and due to my linked list setup, this takes around O(n) time to complete, next it deletes all the indexes and values from the b+ trees, which due to the nature of the B+ tree, this takes (O log(n)) time.
 
 <h1>
 <br>
@@ -128,4 +85,7 @@ prompt the user for the function to carry out upon the property.<br>
 -I refactored the tree to be bottom up when making the bulk insert for efficiency. that way it does not have to rotate, merge or steal. as well as keeping the buckets only 3/4ths fill, lowers the amount of merges and steals that have to happen.<br>
 
 <h1>Searching Choices: <br>
--I made only the Title and Quotes searchable, because that is what makes sense to me, as there are not many movies that share the same title or contain exactly the same quotes. I did not make the director searchable, because directors make more than one movies, and I think this fit more under indexing. The fields that I did not make searchable are the numeric ones, such as rating, revanue, duration. But also the fields in which multiple movies share, like genre, director, production company, I chose to have those indexable as well.
+-I made only the Title and Quotes searchable, because that is what makes sense to me, as although movies that share the same title are more common than ones that contain exactly the same quotes, most people look up what movie they are searching for by the title or phrases in the movie. I did not make the director searchable, because directors make tend to have multiple movies, and not many people look up movies by director. The fields that I did not make searchable are the numeric ones, such as rating, revanue, duration. But also the fields in which multiple movies share, like genre, director, production company, I chose to have those indexable as well.
+
+<h1>Limitations and Issues: <br>
+-If indexing a large amount of dataItems, the writing to file feature can handle it no problem, however the deletion can sometimes crash the program. I am not too sure how to fix this, but deleting one or a few at a time works fine.<br>
