@@ -59,7 +59,7 @@ COS-226<br>
 <h1>Initialization of the database:
 <br>
 <br>
--In my database initialization, it takes around 0.92 seconds to load the 15000 dataItems, and due to the use of mergesort and bulkAdding, has around O(N log(N)) efficiency.
+-In my database initialization, it takes around 2.92 seconds to load the 15000 dataItems, and due to the use of mergesort and bulkAdding, has around O(N log(N)) efficiency.
 
 
 
