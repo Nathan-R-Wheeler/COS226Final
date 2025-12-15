@@ -1,4 +1,10 @@
 # COS226Final
+
+<h3>Nathan Wheeler<br>
+Professor Schotter<br>
+COS-226<br>
+12/15/25<br>
+
 <h1>This is the final project for my Data structures and Algorithms class. It uses indexes in B+ trees and A linked list hash table, as well as mergesort to store bulk items.
 
 <h1>How to Run:<br>
